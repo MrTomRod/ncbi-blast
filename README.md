@@ -6,7 +6,9 @@ Simple Python wrapper for NCBI Blast.
 
 ## Setup:
 
-You need to have ncbi-blast. You can download it using `get_latest_blast.py`
+```bash
+pip install git+https://github.com/MrTomRod/ncbi_blast.git
+```
 
 ## Usage:
 
