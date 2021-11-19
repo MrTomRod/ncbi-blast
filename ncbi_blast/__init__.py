@@ -1,0 +1,1 @@
+from .Blast import Blast
