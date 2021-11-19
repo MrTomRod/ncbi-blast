@@ -31,11 +31,12 @@ def is_installed(program):
 
 
 class Blast:
-    def __init__(self, blast_path: str = None, outfmt: int = 6, blast_columns: [str] = None):
+    def __init__(self, blast_path: str = None, outfmt: int = 6, blast_columns: [str] = None, verbose: bool = True):
         assert outfmt in range(0, 19), 'outfmt must be between 0 and 18'
         if blast_columns is not None:
             assert outfmt in {6, 7, 10}, f'blast_columns can only be specified with outfmt 6, 7 and 10'
 
+        self.verbose = verbose
         self._outfmt = outfmt
         self._blast_columns = blast_columns
         self.executables = dict(
@@ -66,7 +67,7 @@ class Blast:
     def version(self):
         command = [self.executables["blastp"], '-version']
         subprocess = run(command, stdout=PIPE, stderr=PIPE, encoding='ascii')
-        assert subprocess.returncode == 0, F'makeblastdb command failed: {command},\n stdout: {subprocess.stdout},\n stderr: {subprocess.stderr}'
+        assert subprocess.returncode == 0, self.error_message('blastp', command, subprocess)
         return subprocess.stdout.split('\n')[0].split(' ')[1]
 
     def mkblastdb(self, file, dbtype, taxid=None, title=None, overwrite=True):
@@ -88,7 +89,7 @@ class Blast:
             command.extend(['-taxid', str(taxid)])
         subprocess = run(command, stdout=PIPE, stderr=PIPE, encoding='ascii')
 
-        error_message = F'makeblastdb command failed: {command},\n stdout: {subprocess.stdout},\n stderr: {subprocess.stderr}'
+        error_message = self.error_message('makeblastdb', ' '.join(command), subprocess)
         assert subprocess.stderr == '', error_message
         assert subprocess.returncode == 0, error_message
 
@@ -141,7 +142,7 @@ class Blast:
 
         temp_file.close()  # delete temporary file
 
-        assert subprocess.returncode == 0, F'blastp command failed: {command}, {subprocess.stdout}, {subprocess.stderr}'
+        assert subprocess.returncode == 0, self.error_message(mode, ' '.join(command), subprocess)
 
         return subprocess.stdout.rstrip()
 
@@ -180,7 +181,7 @@ class Blast:
             return {}
 
         kwargs = re.split(r'[ =]', kwarg_string)
-        assert len(kwargs) % 2 == 0, f'The number of blast arguments must be even! {kwargs=}'
+        assert len(kwargs) % 2 == 0, f'One argument is missing a value! {kwarg_string}'
         kwargs = dict(zip(
             kwargs[::2],  # even elements (argument)
             kwargs[1::2]  # odd elements (value)
@@ -207,3 +208,9 @@ class Blast:
     @staticmethod
     def kwargs_as_list(kwargs: dict[str:str]) -> [str]:
         return [kw_or_arg for kw_arg_tuple in kwargs.items() for kw_or_arg in kw_arg_tuple]
+
+    def error_message(self, tool: str, command: [str], subprocess) -> str:
+        if self.verbose:
+            return f'{tool} command failed: "{" ".join(command)},\n stdout: {subprocess.stdout}",\n stderr: {subprocess.stderr}'
+        else:
+            return subprocess.stderr
