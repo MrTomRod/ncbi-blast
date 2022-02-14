@@ -89,7 +89,7 @@ class Blast:
             command.extend(['-taxid', str(taxid)])
         subprocess = run(command, stdout=PIPE, stderr=PIPE, encoding='ascii')
 
-        error_message = self.error_message('makeblastdb', ' '.join(command), subprocess)
+        error_message = self.error_message('makeblastdb', command, subprocess)
         assert subprocess.stderr == '', error_message
         assert subprocess.returncode == 0, error_message
 
@@ -115,7 +115,8 @@ class Blast:
         return self.blast(fasta_string, db, mode='tblastn', **kwargs)
 
     def blast(self, fasta_string, db, mode='blastp', **kwargs):
-        assert mode in ['blastp', 'blastn', 'blastx', 'tblastn'], F"mode must be 'blastp', 'blastn', 'blastx' or 'tblastn', is: {mode}"
+        assert mode in ['blastp', 'blastn', 'blastx', 'tblastn'], \
+            F"mode must be 'blastp', 'blastn', 'blastx' or 'tblastn', is: {mode}"
         assert type(db) in [str, list], F'db must be a string (path to db) or a list of strings (multiple db paths)'
 
         # blast database
@@ -142,7 +143,7 @@ class Blast:
 
         temp_file.close()  # delete temporary file
 
-        assert subprocess.returncode == 0, self.error_message(mode, ' '.join(command), subprocess)
+        assert subprocess.returncode == 0, self.error_message(mode, command, subprocess)
 
         return subprocess.stdout.rstrip()
 
@@ -210,7 +211,9 @@ class Blast:
         return [kw_or_arg for kw_arg_tuple in kwargs.items() for kw_or_arg in kw_arg_tuple]
 
     def error_message(self, tool: str, command: [str], subprocess) -> str:
+        if type(command) is list:
+            command = ' '.join(command)
         if self.verbose:
-            return f'{tool} command failed: "{" ".join(command)},\n stdout: {subprocess.stdout}",\n stderr: {subprocess.stderr}'
+            return f'{tool} command failed: "{command}"\nstdout: {subprocess.stdout}\nstderr: {subprocess.stderr}'
         else:
             return subprocess.stderr
