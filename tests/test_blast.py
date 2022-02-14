@@ -27,6 +27,7 @@ class TestMakeBlastDBs(TestCase):
             if os.path.isfile(_file): os.remove(_file)
 
         self.blast.mkblastdb(file, 'nucl', taxid=None, title=None, overwrite=True)
+        print(self.blast.blast_db_info(file))
 
         for ext in self.nucl_file_extensions:
             _file = file + ext
@@ -40,6 +41,7 @@ class TestMakeBlastDBs(TestCase):
             if os.path.isfile(_file): os.remove(_file)
 
         self.blast.mkblastdb(file, 'nucl', taxid=None, title=None, overwrite=True)
+        print(self.blast.blast_db_info(file))
 
         for ext in self.nucl_file_extensions:
             _file = file + ext
@@ -53,6 +55,7 @@ class TestMakeBlastDBs(TestCase):
             if os.path.isfile(_file): os.remove(_file)
 
         self.blast.mkblastdb(file, 'prot', taxid=None, title=None, overwrite=True)
+        print(self.blast.blast_db_info(file))
 
         for ext in self.prot_file_extensions:
             _file = file + ext
@@ -221,5 +224,6 @@ class TestMultipleBlastDBs(TestCase):
                 print(self.blast.parse_kwarg_string(kwarg_string))
 
     def test_kwargs_as_list(self):
-        self.assertEqual(self.blast.kwargs_as_list({'-a': '0', '-b': '1', '-c': '2'}), ['-a', '0', '-b', '1', '-c', '2'])
+        self.assertEqual(self.blast.kwargs_as_list({'-a': '0', '-b': '1', '-c': '2'}),
+                         ['-a', '0', '-b', '1', '-c', '2'])
         self.assertEqual(self.blast.kwargs_as_list({}), [])

@@ -41,6 +41,7 @@ class Blast:
         self._blast_columns = blast_columns
         self.executables = dict(
             makeblastdb='makeblastdb',
+            blastdbcmd='blastdbcmd',
             blastn='blastn',
             blastp='blastp',
             blastx='blastx',
@@ -145,6 +146,12 @@ class Blast:
 
         assert subprocess.returncode == 0, self.error_message(mode, command, subprocess)
 
+        return subprocess.stdout.rstrip()
+
+    def blast_db_info(self, db):
+        command = [self.executables['blastdbcmd'], '-db', db, '-info']
+        subprocess = run(' '.join(command), stdout=PIPE, stderr=PIPE, encoding='ascii', shell=True)
+        assert subprocess.returncode == 0, self.error_message('makeblastdb', command, subprocess)
         return subprocess.stdout.rstrip()
 
     def is_protein_and_not_dna(self, fasta_string):
